@@ -12,7 +12,7 @@ using UnityEngine;
 public class MobileInputReads : MonoBehaviour
 {
 
-    private Vector2 initialPosition;
+    public Vector2 initialPosition;
 
     public GameObject particle;
 
@@ -53,6 +53,8 @@ public class MobileInputReads : MonoBehaviour
             {
                 print("touch swiped");
 
+                initialPosition = touch.position;
+
                 // get the moved direction compared to the initial touch position
                 var direction = touch.position - initialPosition;
 
@@ -60,14 +62,18 @@ public class MobileInputReads : MonoBehaviour
                 // if(direction.x >= 0) 1 else -1
                 var signedDirection = Mathf.Sign(direction.x);
 
-                print("direction swipe: " + direction + " ... signDir: " + signedDirection);
+                //print("direction swipe: " + direction + " ... signDir: " + signedDirection); // this will help find the direction
                
             }//end of swiped
 
-        }//end of loop touches
-      
+        }//end of loop touches      
 
     }//end of update
 
+
+    public void OnDrag()
+    {
+        print("dragging");
+    }
 
 }//end of mobile input reads script
