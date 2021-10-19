@@ -57,12 +57,44 @@ public class MobileInputReads : MonoBehaviour
 
                 // get the moved direction compared to the initial touch position
                 var direction = touch.position - initialPosition;
+                //print("Direction: " + direction);
 
                 // get the signed x direction
                 // if(direction.x >= 0) 1 else -1
                 var signedDirection = Mathf.Sign(direction.x);
 
                 //print("direction swipe: " + direction + " ... signDir: " + signedDirection); // this will help find the direction
+
+                //swip reads
+                //horizontal
+                if(Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
+                {
+                    //if x is positive
+                    if(direction.x > 0)
+                    {
+                        print("swiped right");
+                    }//end x pos
+                    //else x negative
+                    else
+                    {
+                        print("swiped left");
+                    }//end x neg
+
+                }//end hori
+                //vertical
+                else
+                {
+                    //if y is positive
+                    if (direction.y > 0)
+                    {
+                        print("swiped up");
+                    }//end y pos
+                    //else y negative
+                    else
+                    {
+                        print("swiped down");
+                    }//end y neg
+                }//end verti
                
             }//end of swiped
 
