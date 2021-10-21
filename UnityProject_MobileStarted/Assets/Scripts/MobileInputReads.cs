@@ -11,30 +11,61 @@ using UnityEngine;
 /// </summary>
 public class MobileInputReads : MonoBehaviour
 {
-
+    //position start and updated of the finger tracking
     public Vector2 initialPosition;
+    public Vector2 updatePosition;
 
+    //stored finger tracking (in case)
+    public Vector2 initialPositionStored;
+    public Vector2 updatePositionStored;
+
+    //active check if we are still touching the screen
+    private bool isTouching;
+    //direction swiped
+    // 0 = none
+    // 1 = right
+    // 2 = left
+    // 3 = up
+    // 4 = down
+    private int dirSwiped;
+
+    //can delete this, it's just a test
     public GameObject particle;
 
 
-    // Start is called before the first frame update
-    private void Start()
-    {
-        
-    }
 
     // Update is called once per frame
     private void Update()
     {
+
+        //check if touching
+        if (Input.touchCount >= 1)
+        {
+            //print("touching");
+            isTouching = true;           
+        }
+        //else if not touching
+        else
+        {
+            //print("not touching");
+            isTouching = false;         
+            //store positions
+            updatePositionStored = updatePosition;
+            initialPositionStored = initialPosition;
+            //reset currents
+            updatePosition = Vector2.zero;
+            initialPosition = Vector2.zero;
+        }//end not touching
+
         //loop the touch points
         foreach (Touch touch in Input.touches)
         {
-            print("touch");
+            //print("touch loop");
 
             // if the touch phase has started
             if (touch.phase == TouchPhase.Began)
             {
-                print("touch tap / hold");
+                //print("touch tap / hold");
 
 
                 initialPosition = touch.position;
@@ -51,61 +82,83 @@ public class MobileInputReads : MonoBehaviour
             //else we swiped
             else if (touch.phase == TouchPhase.Moved || touch.phase == TouchPhase.Stationary)
             {
-                print("touch swiped");
+                //print("touch moving or stationary");
 
-                initialPosition = touch.position;
-
-                // get the moved direction compared to the initial touch position
-                var direction = touch.position - initialPosition;
-                //print("Direction: " + direction);
-
-                // get the signed x direction
-                // if(direction.x >= 0) 1 else -1
-                var signedDirection = Mathf.Sign(direction.x);
-
-                //print("direction swipe: " + direction + " ... signDir: " + signedDirection); // this will help find the direction
-
-                //swip reads
-                //horizontal
-                if(Mathf.Abs(direction.x) > Mathf.Abs(direction.y))
-                {
-                    //if x is positive
-                    if(direction.x > 0)
-                    {
-                        print("swiped right");
-                    }//end x pos
-                    //else x negative
-                    else
-                    {
-                        print("swiped left");
-                    }//end x neg
-
-                }//end hori
-                //vertical
-                else
-                {
-                    //if y is positive
-                    if (direction.y > 0)
-                    {
-                        print("swiped up");
-                    }//end y pos
-                    //else y negative
-                    else
-                    {
-                        print("swiped down");
-                    }//end y neg
-                }//end verti
+                updatePosition = touch.position;                
                
-            }//end of swiped
+            }//end of swiped touch
 
-        }//end of loop touches      
+            //check if touches end
+            bool touchEnd = touch.phase == TouchPhase.Ended;
+            if (touchEnd)
+            {
+                print("Bool - Touch End: " + touchEnd);
+                SwipeReads();
+                break;
+            }//end touch end check
+               
+
+        }//end of loop touches   
+
+
+
+        
 
     }//end of update
 
 
-    public void OnDrag()
+    //function to track the initial position and update position
+    //direction swiped
+    // 0 = none
+    // 1 = right
+    // 2 = left
+    // 3 = up
+    // 4 = down
+    private void SwipeReads()
     {
-        print("dragging");
-    }
+                
+        //swip reads
+        Vector2 swipeMath= Vector2.zero;
+
+        if (isTouching == true) { swipeMath = initialPosition - updatePosition; }
+        else { swipeMath = initialPositionStored - updatePositionStored; }
+
+        //print("Reading Swipes Touch: " + isTouching + "... | SwipeMath: " + swipeMath);
+
+        //horizontal
+        if (Mathf.Abs(swipeMath.x) > Mathf.Abs(swipeMath.y))
+        {
+            //if x is positive
+            if (swipeMath.x < 0)
+            {
+                print("swiped right");
+                dirSwiped = 1;
+            }//end x pos
+             //else x negative
+            else
+            {
+                print("swiped left");
+                dirSwiped = 2;
+            }//end x neg
+
+        }//end hori
+         //vertical
+        else
+        {
+            //if y is positive
+            if (swipeMath.y < 0)
+            {
+                print("swiped up");
+                dirSwiped = 3;
+            }//end y pos
+             //else y negative
+            else
+            {
+                print("swiped down");
+                dirSwiped = 4;
+            }//end y neg
+        }//end verti
+
+    }//end of swipe reads
 
 }//end of mobile input reads script

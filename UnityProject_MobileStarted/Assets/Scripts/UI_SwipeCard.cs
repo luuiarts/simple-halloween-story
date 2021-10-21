@@ -15,24 +15,48 @@ public class UI_SwipeCard : MonoBehaviour
     private Vector3 posRectStart;
     //private Vector3 posStart;
 
+
+    // checks for if we want to lock the position/direction we want to drag this object.
+    // this only applies if we cannot swipe anywhere to move this object
     public bool lockX, lockY;
     [Range(-1f, 1f)]
     public float acceptOffset;
     private float exceedSwipe;
 
+    // if we have buttons or objects that can be swiped anywhere, then we want to read this
+    // in the updates function. That, combined with Must Swipe Right will ensure this object 
+    // is interacted with
+    public bool canSwipeAnywhere;
+    public bool mustSwipeRight;
+
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         rectStart = transform.GetComponent<RectTransform>();
         posRectStart = rectStart.position;
-        //posStart = transform.position;
+        
+        if(canSwipeAnywhere == true) { lockX = true; lockY = true; }
+    }//end start
+
+
+    //update
+    private void Update()
+    {
+        
+        
+    }//end update
+
+    private void ReadSwipeAnywhere()
+    {
+
     }
+
 
     // while we are dragging
     public void DraggingMe()
     {
         print("currently dragging");
-        rectStart.position = scrpt_MRI.initialPosition;
+        rectStart.position = scrpt_MRI.updatePosition;
 
         //if lock x
         if (lockX == true)
