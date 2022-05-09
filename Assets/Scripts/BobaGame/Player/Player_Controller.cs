@@ -17,6 +17,9 @@ public class Player_Controller : MonoBehaviour
     //reference to camera that will shoot ray for navmesh target **Assigned by Camera_Controller
     [Tooltip("reference to camera that will shoot ray for navmesh target")]
     public Camera camRay;
+    // a reference to the cursor3D object
+    [Tooltip("Drag and drop a cursor 3d object here. It will be placed where the player clicks to move the character")]
+    public Transform trans_cursor3D;
     // a reference to the navmesh agent we want to move (player)
     [Tooltip(" a reference to the navmesh agent we want to move (player)")]
     public NavMeshAgent agentPlayer;
@@ -31,6 +34,11 @@ public class Player_Controller : MonoBehaviour
     // references to the animation states
     [HideInInspector]
     public bool isWalking;
+    // the animator for the player
+    private Animator anim_Player;
+    // the tag for walking bool
+    private string animTag_isMoving = "isMoving";
+
 
     //start
     private void Start()
@@ -38,6 +46,8 @@ public class Player_Controller : MonoBehaviour
         //set vars
         canMove = true;
         isWalking = false;
+        if(agentPlayer!= null && agentPlayer.transform.GetComponent<Animator>() != null) { anim_Player = agentPlayer.transform.GetComponent<Animator>(); }
+        UpdateCursor(Vector3.zero, 0, false);
 
     }//end of start
 
@@ -50,6 +60,9 @@ public class Player_Controller : MonoBehaviour
 
         //check goal
         WaitingToReachGoal();
+
+        //update animation
+        UpdateAnimation();
     }//end of update
 
 
@@ -71,6 +84,8 @@ public class Player_Controller : MonoBehaviour
                 {
                     //send the agent to that location
                     agentPlayer.SetDestination(hitInfo.point);
+                    //update the cursor
+                    UpdateCursor(hitInfo.point, 0, true);
                 }//end of can move
                 else
                 //else if we cant
@@ -120,13 +135,13 @@ public class Player_Controller : MonoBehaviour
             {
                 //set walking to no
                 isWalking = false;
+                UpdateCursor(Vector3.zero, 0, false);
 
                 //if we have no path
                 if (!agentPlayer.hasPath || agentPlayer.velocity.sqrMagnitude == 0f)
                 {
                     // Done
-
-                    trans_TempGoal = null;
+                    trans_TempGoal = null;                    
 
                     //if we have no object goal then return
                     if (obj_TempGoal == null) { return; }
@@ -138,10 +153,6 @@ public class Player_Controller : MonoBehaviour
                     //clear our goal
                     obj_TempGoal = null;
 
-
-
-
-
                 }//end of no path
 
             }//end of no remaining distance
@@ -150,6 +161,7 @@ public class Player_Controller : MonoBehaviour
             {
                 //set walking to be true
                 isWalking = true;
+                if (agentPlayer.remainingDistance != Mathf.Infinity) { UpdateCursor(Vector3.zero, agentPlayer.remainingDistance, true); } else { UpdateCursor(Vector3.zero, 1f, true); }
 
             }//end of have not reached our goal
 
@@ -157,6 +169,31 @@ public class Player_Controller : MonoBehaviour
 
 
     }//end of waiting to reach goal
+
+
+
+    //a function for reading and assigning animations
+    private void UpdateAnimation()
+    {
+        //if we dont have an animator thenreturn
+        if(anim_Player == null) { return; }
+
+        anim_Player.SetBool(animTag_isMoving, isWalking);
+
+    }//end of update animations
+
+    //updating the 3d cursor when we click
+    private void UpdateCursor(Vector3 _pos, float _distSize, bool _showMesh)
+    {
+        //if no cursor then stop
+        if(trans_cursor3D == null) { return; }
+        trans_cursor3D.gameObject.SetActive(_showMesh);
+        if (_pos != Vector3.zero) { trans_cursor3D.position = _pos; }
+        if(_distSize != 0) { trans_cursor3D.localScale = new Vector3(_distSize, 0.1f, _distSize); }
+          
+
+    }//end of update cursor
+
 
 
 }// end of player controller
