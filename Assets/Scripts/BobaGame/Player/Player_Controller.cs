@@ -12,7 +12,7 @@ public class Player_Controller : MonoBehaviour
 {
     // a bool for if we can move or cannot move
     [HideInInspector]
-    public bool canMove;
+    public bool canMove;   
 
     //reference to camera that will shoot ray for navmesh target **Assigned by Camera_Controller
     [Tooltip("reference to camera that will shoot ray for navmesh target")]
@@ -29,7 +29,9 @@ public class Player_Controller : MonoBehaviour
     //a reference to our position data we clicked on (doesnt require goal object)
     private Transform trans_TempGoal;
 
-
+    public SkinnedMeshRenderer mRen_Player, mRen_SittingPlayer, mRen_LayingPlayer;
+    public GameObject obj_PlayerLight;
+    public Transform trans_PlayerHandR;
 
     // references to the animation states
     [HideInInspector]
@@ -48,6 +50,8 @@ public class Player_Controller : MonoBehaviour
         isWalking = false;
         if(agentPlayer!= null && agentPlayer.transform.GetComponent<Animator>() != null) { anim_Player = agentPlayer.transform.GetComponent<Animator>(); }
         UpdateCursor(Vector3.zero, 0, false);
+        mRen_SittingPlayer.enabled = false;
+        mRen_LayingPlayer.enabled = false;
 
     }//end of start
 
@@ -71,7 +75,8 @@ public class Player_Controller : MonoBehaviour
     {
         //if we release right mouse click
         if (Input.GetMouseButtonUp(1))
-        {
+        {           
+
             //reference to the raycast we will shoot
             Ray rayCast = camRay.ScreenPointToRay(Input.mousePosition);
             // a ref to where the ray hit
@@ -146,9 +151,8 @@ public class Player_Controller : MonoBehaviour
                     //if we have no object goal then return
                     if (obj_TempGoal == null) { return; }
 
-                    //if it's the basket
-                    //if (obj_TempGoal.tag == "Finish" || obj_TempGoal.tag == "Basket")
-
+                    //send the obj goal to our custom function to analyze what to do
+                    AnalyzeInteractable(obj_TempGoal);
 
                     //clear our goal
                     obj_TempGoal = null;
@@ -180,6 +184,8 @@ public class Player_Controller : MonoBehaviour
 
         anim_Player.SetBool(animTag_isMoving, isWalking);
 
+        if (isWalking) { mRen_LayingPlayer.enabled = false; mRen_SittingPlayer.enabled = false; mRen_Player.enabled = true; obj_PlayerLight.SetActive(true); }
+
     }//end of update animations
 
     //updating the 3d cursor when we click
@@ -195,5 +201,33 @@ public class Player_Controller : MonoBehaviour
     }//end of update cursor
 
 
+    //a function to handle all interactable objects
+    private void AnalyzeInteractable(GameObject _IntObj)
+    {
+        //check the different name options
+        switch (_IntObj.name)
+        {
+            case "Col_Bed":
+                mRen_Player.enabled = false;
+                mRen_LayingPlayer.enabled = true;
+                obj_PlayerLight.SetActive(false);
+                break;
+            case "Col_Cush":
+                mRen_Player.enabled = false;
+                mRen_SittingPlayer.enabled = true;
+                obj_PlayerLight.SetActive(false);
+                break;
+            case "flowers":
+                _IntObj.transform.position = trans_PlayerHandR.position;
+                _IntObj.transform.GetComponent<BoxCollider>().enabled = false;
+                _IntObj.transform.parent = trans_PlayerHandR;
+                break;
+            default:
+                print("no condition listed for name: " + _IntObj.name);
+                break;
+
+        }//end of interactable conditions
+
+    }//end of analyze interactable
 
 }// end of player controller
