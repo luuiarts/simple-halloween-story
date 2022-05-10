@@ -31,7 +31,10 @@ public class Player_Controller : MonoBehaviour
 
     public SkinnedMeshRenderer mRen_Player, mRen_SittingPlayer, mRen_LayingPlayer;
     public GameObject obj_PlayerLight;
-    public Transform trans_PlayerHandR;
+    public Transform trans_PlayerHandR, trans_FlowerDropoff;
+    private bool hasFlowers;
+    private List<Transform> lstTrans_Flowers;
+
 
     // references to the animation states
     [HideInInspector]
@@ -40,6 +43,10 @@ public class Player_Controller : MonoBehaviour
     private Animator anim_Player;
     // the tag for walking bool
     private string animTag_isMoving = "isMoving";
+
+    // the UI script we need to reference
+    public UI_InformationText scrpt_UIInfo;
+
 
 
     //start
@@ -52,6 +59,9 @@ public class Player_Controller : MonoBehaviour
         UpdateCursor(Vector3.zero, 0, false);
         mRen_SittingPlayer.enabled = false;
         mRen_LayingPlayer.enabled = false;
+        scrpt_UIInfo.UpdateUI(false, "");
+        hasFlowers = false;
+        lstTrans_Flowers = new List<Transform>();
 
     }//end of start
 
@@ -184,7 +194,8 @@ public class Player_Controller : MonoBehaviour
 
         anim_Player.SetBool(animTag_isMoving, isWalking);
 
-        if (isWalking) { mRen_LayingPlayer.enabled = false; mRen_SittingPlayer.enabled = false; mRen_Player.enabled = true; obj_PlayerLight.SetActive(true); }
+        //if we are walking then turn off any side animations / UI / idle temporary objects
+        if (isWalking) { scrpt_UIInfo.UpdateUI(false, ""); mRen_LayingPlayer.enabled = false; mRen_SittingPlayer.enabled = false; mRen_Player.enabled = true; obj_PlayerLight.SetActive(true); }
 
     }//end of update animations
 
@@ -221,6 +232,11 @@ public class Player_Controller : MonoBehaviour
                 _IntObj.transform.position = trans_PlayerHandR.position;
                 _IntObj.transform.GetComponent<BoxCollider>().enabled = false;
                 _IntObj.transform.parent = trans_PlayerHandR;
+                lstTrans_Flowers.Add(_IntObj.transform);
+                hasFlowers = true;
+                break;
+            case "Col_Vas":
+                if (!hasFlowers) { scrpt_UIInfo.UpdateUI(true, "My vase is empty... Maybe I can pick something today."); } else { foreach (Transform _trnsFlwr in lstTrans_Flowers) { _trnsFlwr.parent = null; _trnsFlwr.position = trans_FlowerDropoff.position; lstTrans_Flowers.Remove(_trnsFlwr); }  }
                 break;
             default:
                 print("no condition listed for name: " + _IntObj.name);
