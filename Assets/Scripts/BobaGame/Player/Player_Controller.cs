@@ -39,6 +39,7 @@ public class Player_Controller : MonoBehaviour
     private bool teapotHasWater;
     private bool teapotHasHeat;
     private bool hasCup;
+    private bool hasPouredTea;
 
     private bool hasFinishedTheGame;    
     
@@ -77,6 +78,7 @@ public class Player_Controller : MonoBehaviour
         teapotHasWater = false;
         teapotHasHeat = false;
         hasCup = false;
+        hasPouredTea = false;
 
     }//end of start
 
@@ -171,14 +173,11 @@ public class Player_Controller : MonoBehaviour
                 if (!agentPlayer.hasPath || agentPlayer.velocity.sqrMagnitude == 0f)
                 {
                     // Done
-                    trans_TempGoal = null;                    
+                    trans_TempGoal = null;
 
-                    //if we have no object goal then return
-                    if (obj_TempGoal == null) { return; }
-
-                    //send the obj goal to our custom function to analyze what to do
-                    AnalyzeInteractable(obj_TempGoal);
-
+                    //if we have an object goal then  //send the obj goal to our custom function to analyze what to do
+                    if (obj_TempGoal != null) { AnalyzeInteractable(obj_TempGoal); }              
+                    
                     //clear our goal
                     obj_TempGoal = null;
 
@@ -230,6 +229,7 @@ public class Player_Controller : MonoBehaviour
     //a function to handle all interactable objects
     private void AnalyzeInteractable(GameObject _IntObj)
     {
+            
         //check the different name options
         switch (_IntObj.name)
         {
@@ -238,12 +238,23 @@ public class Player_Controller : MonoBehaviour
                 mRen_Player.enabled = false;
                 mRen_LayingPlayer.enabled = true;
                 obj_PlayerLight.SetActive(false);
+
+                //if we are done
+                if (hasPouredTea && vaseHasFlower) { print("Finished"); hasFinishedTheGame = true; scrpt_UIInfo.UpdateUI(true, "I have lot's to do, but a little time to rest before my big day."); }
+                else { scrpt_UIInfo.UpdateUI(true, "This is nice, hot tea and new flowers will make it perfect."); }
+
                 break;
             //when we reach for the cushion seat
             case "Col_Cush":
                 mRen_Player.enabled = false;
                 mRen_SittingPlayer.enabled = true;
                 obj_PlayerLight.SetActive(false);
+
+                //if we are done
+                if (hasPouredTea && vaseHasFlower) { print("Finished"); hasFinishedTheGame = true; scrpt_UIInfo.UpdateUI(true, "Okay, I have everything I need to plan for my big day."); }
+                else
+                { scrpt_UIInfo.UpdateUI(true, "I have a lot to plan for today, but I could use some tea, and maybe fresh flowers to help me think."); }
+
                 break;
             // when we reach for the flowers
             case "flowers":
@@ -259,22 +270,28 @@ public class Player_Controller : MonoBehaviour
                 else
                 {
                     scrpt_UIInfo.UpdateUI(true, "Oh, this one is perfect!");
-                    _IntObj.transform.position = trans_PlayerHandR.position;
-                    _IntObj.transform.GetComponent<BoxCollider>().enabled = false;
-                    _IntObj.transform.parent = trans_PlayerHandR;
+                    trans_HoldingObject = _IntObj.transform;
+                    trans_HoldingObject.position = trans_PlayerHandR.position;
+                    trans_HoldingObject.GetComponent<BoxCollider>().enabled = false;
+                    trans_HoldingObject.parent = trans_PlayerHandR;
                     hasFlowers = true;
                     isHoldingObject = true;
                 }
                 break;
+            // when we reach the vase
             case "Col_Vas":
-                if (!hasFlowers) { scrpt_UIInfo.UpdateUI(true, "the vase look a little empty, some flowers will be nice!"); } else { trans_HoldingObject.parent = null; trans_HoldingObject.position = trans_FlowerDropoff.position; hasFlowers = false; isHoldingObject = false; trans_HoldingObject = null;  }
                 //are holding something already
                 if (isHoldingObject)
                 {
-                    if (hasTeapot == true) { scrpt_UIInfo.UpdateUI(true, "I don't need flowers to make tea, just water and some heat."); }
-                    if (hasCup == true) { scrpt_UIInfo.UpdateUI(true, "I wonder if this flower could fit in my cup... Hm, I'll have to test it another time."); }
-                    if (hasFlowers == true) { scrpt_UIInfo.UpdateUI(true, "Don't be sad my other flowers, I'll come back for you when it's the right time."); }
-                    //scrpt_UIInfo.UpdateUI(true, "I would love a drink, but wasn't I doing something?");
+                    if (hasTeapot == true) { scrpt_UIInfo.UpdateUI(true, "I think there's still fresh water in the vase, so I don't need anymore."); }
+                    if (hasCup == true) { scrpt_UIInfo.UpdateUI(true, "For some reason I feel like I want to drink the vase water... but I definitely shouldn't."); }
+                    if (hasFlowers == true)
+                    {
+                        if (vaseHasFlower) { scrpt_UIInfo.UpdateUI(true, "I guess more flowers won't hurt."); }
+                        else { scrpt_UIInfo.UpdateUI(true, "Wow, I picked the best one. The feng shui is perfect for some tea."); }
+                        trans_HoldingObject.parent = null; trans_HoldingObject.position = _IntObj.transform.position; hasFlowers = false; vaseHasFlower = true; isHoldingObject = false; trans_HoldingObject = null;
+                    }
+
                 }
                 //are not holding something already
                 else
@@ -285,33 +302,33 @@ public class Player_Controller : MonoBehaviour
                 //are holding something already
                 if (isHoldingObject)
                 {
-                    if (hasTeapot == true && teapotHasWater == true && teapotHasHeat == true) { scrpt_UIInfo.UpdateUI(true, "I'm so excited to enjoy my tea!"); } // pour the tea in the cup
-                    else if(hasTeapot==true && teapotHasWater == true) { scrpt_UIInfo.UpdateUI(true, "It's a little cold today, so I'll proably heat this up before I drink it"); }
+                    if (hasTeapot == true && teapotHasWater == true && teapotHasHeat == true) { hasPouredTea = true; scrpt_UIInfo.UpdateUI(true, "I'm so excited to enjoy my tea!"); } // pour the tea in the cup
+                    else if (hasTeapot == true && teapotHasWater == true) { scrpt_UIInfo.UpdateUI(true, "It's a little cold today, so I'll proably heat this up before I drink it"); }
                     else if (hasTeapot == true) { scrpt_UIInfo.UpdateUI(true, "*Immitates pouring hot water with mouth* ... Okay, I'm ready for the real thing!"); }
                     //put down the cup
-                    if(hasCup == true) { if (_IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform != null) {trans_HoldingObject.transform.parent = null; trans_HoldingObject.position = _IntObj.transform.position; trans_HoldingObject.rotation = _IntObj.transform.rotation; trans_HoldingObject = null; isHoldingObject = false; hasCup = false; } }
-                    if(hasFlowers == true) { scrpt_UIInfo.UpdateUI(true, "I wouldn't drink flowers. Well ... yeah I prefer hot tea."); }
-                    
+                    if (hasCup == true) { if (_IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform != null) { trans_HoldingObject.transform.parent = null; trans_HoldingObject.position = _IntObj.transform.position; trans_HoldingObject.rotation = _IntObj.transform.rotation; trans_HoldingObject = null; isHoldingObject = false; hasCup = false; } }
+                    if (hasFlowers == true) { scrpt_UIInfo.UpdateUI(true, "I wouldn't drink flowers. Well ... yeah I prefer hot tea."); }
+
                 }
                 //are not holding something already
                 else
                 {
-                    if (_IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform != null) { trans_HoldingObject = _IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform; isHoldingObject = true; hasCup = true; }
-                    trans_HoldingObject.transform.position = trans_PlayerHandR.position;                    
-                    trans_HoldingObject.parent = trans_PlayerHandR;                    
+                    if (_IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform != null) { trans_HoldingObject = _IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform; trans_HoldingObject.position = trans_PlayerHandR.position; trans_HoldingObject.parent = trans_PlayerHandR; isHoldingObject = true; hasCup = true; }
+                    trans_HoldingObject.transform.position = trans_PlayerHandR.position;
+                    trans_HoldingObject.parent = trans_PlayerHandR;
                     hasCup = true;
                     isHoldingObject = true;
                 }
                 break;
             //when we reach for the tpot
-            case "Col_Tpot":
+            case "Col_Ketl":
                 //are holding something already
                 if (isHoldingObject)
                 {
                     //put the teapot down
                     if (hasTeapot == true) { if (_IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform != null) { trans_HoldingObject.transform.parent = null; trans_HoldingObject.position = _IntObj.transform.position; trans_HoldingObject.rotation = _IntObj.transform.rotation; trans_HoldingObject = null; isHoldingObject = false; hasTeapot = false; } }
 
-                    if (hasCup == true && teapotHasWater == true && teapotHasHeat == true) { scrpt_UIInfo.UpdateUI(true, "I'm so excited to enjoy my tea!"); } // pour the tea in the cup
+                    if (hasCup == true && teapotHasWater == true && teapotHasHeat == true) { hasPouredTea = true; scrpt_UIInfo.UpdateUI(true, "I'm so excited to enjoy my tea"); } // pour the tea in the cup
                     else if (hasCup == true && teapotHasWater == true) { scrpt_UIInfo.UpdateUI(true, "Oops! I forgot to heat up the pot."); }
                     else if (hasCup == true) { scrpt_UIInfo.UpdateUI(true, "Warm tea sounds great right now"); }
 
@@ -321,12 +338,43 @@ public class Player_Controller : MonoBehaviour
                 else
                 {
                     scrpt_UIInfo.UpdateUI(true, "Looks like there's still tea leaves, just need a few more things for my morning ritual.");
-                    if (_IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform != null) { trans_HoldingObject = _IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform; isHoldingObject = true; hasTeapot = true; }
+                    if (_IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform != null) { print("grabbing kettle"); trans_HoldingObject = _IntObj.GetComponent<OnMouseOverChange>().theOriginalModel.transform; trans_HoldingObject.position = trans_PlayerHandR.position; trans_HoldingObject.parent = trans_PlayerHandR; isHoldingObject = true; hasTeapot = true; }
                     trans_HoldingObject.transform.position = trans_PlayerHandR.position;
                     trans_HoldingObject.parent = trans_PlayerHandR;
                     hasTeapot = true;
                     isHoldingObject = true;
-                }                
+                }
+                break;
+            // when we reach the oven
+            case "Col_Oven":
+                //are holding something already
+                if (isHoldingObject)
+                {
+                    if (hasTeapot == true) { if (teapotHasWater) { scrpt_UIInfo.UpdateUI(true, "Oven is on, now I can put the teapot back on the stove"); teapotHasHeat = true; } else {scrpt_UIInfo.UpdateUI(true, "Let me fill this thing with water before I turn up the heat."); }  }
+                    if (hasCup == true ) { if (teapotHasWater) { scrpt_UIInfo.UpdateUI(true, "Heat activated! Now I can pour myself a cup."); teapotHasHeat = true; } else { scrpt_UIInfo.UpdateUI(true, "I should put some water in the kettle before I turn the oven on."); } }
+                    if (hasFlowers == true) { scrpt_UIInfo.UpdateUI(true, "I probably should put my flower in the oven... Although I'm curious if, ... nah. nope. You're going in the vase."); }
+                }
+                //are not holding something already
+                else
+                { scrpt_UIInfo.UpdateUI(true, "I'll turn the oven on so I can make some hot tea. I'll make it low just in case I forget... again."); if (teapotHasWater == true) { teapotHasHeat = true; scrpt_UIInfo.UpdateUI(true, "Yay! Teatime! Let me grab my cup"); } }
+                break;
+            // when we reach the kitchen sink
+            case "Col_Sink":
+                //are holding something already
+                if (isHoldingObject)
+                {
+                    if (hasTeapot == true)
+                    {
+                        if (teapotHasWater) { scrpt_UIInfo.UpdateUI(true, "Good on water, just need to heat this baby up."); } else { teapotHasWater = true; scrpt_UIInfo.UpdateUI(true, "Just enough to make the perfect brew."); }
+                        if (teapotHasHeat) { scrpt_UIInfo.UpdateUI(true, "I could pour this out, but that would be a waste"); }                        
+                    }
+
+                    if (hasCup == true) { scrpt_UIInfo.UpdateUI(true, "I'd rather drink faucet water after the germs have been cooked. That's one thing I love about hot tea."); }
+                    if (hasFlowers == true) { scrpt_UIInfo.UpdateUI(true, "There's fresh water in the vase, I can just drop these in."); }
+                }
+                //are not holding something already
+                else
+                { scrpt_UIInfo.UpdateUI(true, "I should grab my kettle teapot, then I could make some nice warm tea after."); }
                 break;
             //when we reach for an interactable object we haven't wrote a condition for
             default:
