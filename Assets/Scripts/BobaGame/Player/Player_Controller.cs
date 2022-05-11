@@ -79,6 +79,7 @@ public class Player_Controller : MonoBehaviour
         teapotHasHeat = false;
         hasCup = false;
         hasPouredTea = false;
+        scrpt_UIInfo.UpdateUI(true, "Today is my first day at the Boba Shop. I want to take a little time to mentally prepare. Before I do, I can't forget to pick some new flowers, and make my morning tea.");
 
     }//end of start
 
