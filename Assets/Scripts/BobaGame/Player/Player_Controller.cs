@@ -79,7 +79,7 @@ public class Player_Controller : MonoBehaviour
         teapotHasHeat = false;
         hasCup = false;
         hasPouredTea = false;
-        scrpt_UIInfo.UpdateUI(true, "Today is my first day at the Boba Shop. I want to take a little time to mentally prepare. Before I do, I can't forget to pick some new flowers, and make my morning tea.");
+        scrpt_UIInfo.UpdateUI(true, "Today is my first day at the Boba Shop. I want to take a little time to mentally prepare. Before I do, I can't forget to pick some new flowers, and make my morning tea. (USE MOUSE CLICK TO MOVE)");
 
     }//end of start
 
@@ -102,7 +102,7 @@ public class Player_Controller : MonoBehaviour
     private void CheckMouseButtons()
     {
         //if we release right mouse click
-        if (Input.GetMouseButtonUp(1))
+        if (Input.GetMouseButtonUp(1) || Input.GetMouseButtonUp(0))
         {           
 
             //reference to the raycast we will shoot
@@ -220,8 +220,8 @@ public class Player_Controller : MonoBehaviour
         //if no cursor then stop
         if(trans_cursor3D == null) { return; }
         trans_cursor3D.gameObject.SetActive(_showMesh);
-        if (_pos != Vector3.zero) { trans_cursor3D.position = _pos; }
-        if(_distSize != 0) { trans_cursor3D.localScale = new Vector3(_distSize, 0.1f, _distSize); }
+        if (_pos != Vector3.zero) { trans_cursor3D.position = _pos; trans_cursor3D.localScale = new Vector3(0.25f, 0.1f, 0.25f); }
+        //if(_distSize != 0) { trans_cursor3D.localScale = new Vector3(_distSize, 0.1f, _distSize); }
           
 
     }//end of update cursor
